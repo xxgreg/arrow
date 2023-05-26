@@ -63,7 +63,7 @@ func generateTableMetaData(schema *schema.Schema, props *parquet.WriterPropertie
 	rg2Builder.SetNumRows(nrows / 2)
 	rg2Builder.Finish(1024, -1)
 
-	return fbuilder.Finish()
+	return fbuilder.Finish(metadata.KeyValueMetadata{})
 }
 
 func assertStatsSet(t *testing.T, m *metadata.ColumnChunkMetaData) {
@@ -247,7 +247,7 @@ func TestV1VersionMetadata(t *testing.T) {
 	schema := schema.NewSchema(root)
 
 	fbuilder := metadata.NewFileMetadataBuilder(schema, props, nil)
-	faccessor, err := fbuilder.Finish()
+	faccessor, err := fbuilder.Finish(metadata.KeyValueMetadata{})
 	require.NoError(t, err)
 	assert.EqualValues(t, parquet.V1_0, faccessor.Version())
 }
@@ -266,7 +266,7 @@ func TestKeyValueMetadata(t *testing.T) {
 	kvmeta.Append("test_key", "test_value")
 
 	fbuilder := metadata.NewFileMetadataBuilder(schema, props, kvmeta)
-	faccessor, err := fbuilder.Finish()
+	faccessor, err := fbuilder.Finish(kvmeta)
 	require.NoError(t, err)
 
 	assert.True(t, faccessor.KeyValueMetadata().Equals(kvmeta))

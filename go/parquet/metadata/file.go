@@ -45,7 +45,6 @@ type FileMetaDataBuilder struct {
 	schema         *schema.Schema
 	rowGroups      []*format.RowGroup
 	currentRgBldr  *RowGroupMetaDataBuilder
-	kvmeta         KeyValueMetadata
 	cryptoMetadata *format.FileCryptoMetaData
 }
 
@@ -60,7 +59,6 @@ func NewFileMetadataBuilder(schema *schema.Schema, props *parquet.WriterProperti
 		metadata:       format.NewFileMetaData(),
 		props:          props,
 		schema:         schema,
-		kvmeta:         kvmeta,
 		cryptoMetadata: crypto,
 	}
 }
@@ -98,7 +96,7 @@ func (f *FileMetaDataBuilder) AppendRowGroup() *RowGroupMetaDataBuilder {
 // Finish will finalize the metadata of the number of rows, row groups,
 // version etc. This will clear out this filemetadatabuilder so it can
 // be re-used
-func (f *FileMetaDataBuilder) Finish() (*FileMetaData, error) {
+func (f *FileMetaDataBuilder) Finish(kvmeta KeyValueMetadata) (*FileMetaData, error) {
 	totalRows := int64(0)
 	for _, rg := range f.rowGroups {
 		totalRows += rg.NumRows
@@ -145,7 +143,7 @@ func (f *FileMetaDataBuilder) Finish() (*FileMetaData, error) {
 	}
 
 	f.metadata.Schema = schema.ToThrift(f.schema.Root())
-	f.metadata.KeyValueMetadata = f.kvmeta
+	f.metadata.KeyValueMetadata = kvmeta
 
 	out := &FileMetaData{
 		FileMetaData: f.metadata,

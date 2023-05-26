@@ -170,7 +170,7 @@ func (fw *Writer) Close() error {
 		fileEncryptProps := fw.props.FileEncryptionProperties()
 		if fileEncryptProps == nil { // non encrypted file
 			var err error
-			if fw.FileMetadata, err = fw.metadata.Finish(); err != nil {
+			if fw.FileMetadata, err = fw.metadata.Finish(fw.KeyValueMetadata); err != nil {
 				return err
 			}
 
@@ -186,7 +186,7 @@ func (fw *Writer) Close() error {
 func (fw *Writer) closeEncryptedFile(props *parquet.FileEncryptionProperties) (err error) {
 	// encrypted file with encrypted footer
 	if props.EncryptedFooter() {
-		fw.FileMetadata, err = fw.metadata.Finish()
+		fw.FileMetadata, err = fw.metadata.Finish(fw.KeyValueMetadata)
 		if err != nil {
 			return
 		}
@@ -214,7 +214,7 @@ func (fw *Writer) closeEncryptedFile(props *parquet.FileEncryptionProperties) (e
 			return err
 		}
 	} else {
-		if fw.FileMetadata, err = fw.metadata.Finish(); err != nil {
+		if fw.FileMetadata, err = fw.metadata.Finish(fw.KeyValueMetadata); err != nil {
 			return
 		}
 		footerSigningEncryptor := fw.fileEncryptor.GetFooterSigningEncryptor()
