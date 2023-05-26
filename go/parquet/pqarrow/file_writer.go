@@ -253,6 +253,15 @@ func (fw *FileWriter) WriteTable(tbl arrow.Table, chunkSize int64) error {
 	return nil
 }
 
+// AppendKeyValueMetadata appends key and value to the underlying parquet metadata. If either key
+// or value contains an invalid utf8 rune, nothing is added and an error is returned.
+func (fw *FileWriter) AppendKeyValueMetadata(key, value string) error {
+	if fw.wr.KeyValueMetadata == nil {
+		fw.wr.KeyValueMetadata = metadata.NewKeyValueMetadata()
+	}
+	return fw.wr.KeyValueMetadata.Append(key, value)
+}
+
 // Close flushes out the data and closes the file. It can be called multiple times,
 // subsequent calls after the first will have no effect.
 func (fw *FileWriter) Close() error {
